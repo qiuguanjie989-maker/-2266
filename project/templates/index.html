@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Meta元博士</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="/static/css/style.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 顶部横幅 -->
+    <div class="hero-section">
+        <div class="container">
+            <h1 class="hero-title text-center">Dr. Meta元博士</h1>
+            <p class="hero-subtitle text-center">比較各大AI語言模型的回應</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <!-- 身份選擇 -->
+                        <h5 class="card-title mb-3"><i class="fas fa-user-circle me-2"></i>用戶設定</h5>
+                        <div class="mb-3">
+                            <label class="form-label">選擇您的身份：</label>
+                            <div class="dropdown w-100">
+                                <button class="btn btn-primary dropdown-toggle w-100" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user-tag me-2"></i>請選取你的身份
+                                </button>
+                                <ul class="dropdown-menu w-100">
+                                    <li><a class="dropdown-item" href="#" onclick="selectRole(this)"><i class="fas fa-user me-2"></i>一般人</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="selectRole(this)"><i class="fas fa-child me-2"></i>國小生</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="selectRole(this)"><i class="fas fa-school me-2"></i>國中生</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="selectRole(this)"><i class="fas fa-graduation-cap me-2"></i>高中生</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <span class="form-label">當前身份：</span>
+                            <span class="role-badge" id="currentRole">一般人</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <!-- 問題輸入 -->
+                        <h5 class="card-title mb-3"><i class="fas fa-question-circle me-2"></i>提問區域</h5>
+                        <!-- 常用提示語按鈕區 -->
+                            <div class="mb-3">
+                                <label class="form-label">常用提示語：</label>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn custom-btn" onclick="addCommonPrompt('為什麼')">為什麼</button>
+                                    <button type="button" class="btn custom-btn" onclick="addCommonPrompt('解釋')">解釋</button>
+                                    <button type="button" class="btn custom-btn" onclick="addCommonPrompt('範例')">範例</button>
+                                    <button type="button" class="btn custom-btn" onclick="addCommonPrompt('建議')">建議</button>
+                                </div>
+                            </div>
+                        <div class="mb-3 input-container">
+                            <label for="userInput" class="form-label">輸入您的問題：</label>
+                            <textarea class="form-control" id="userInput" rows="4" placeholder="請輸入您想問的問題..." maxlength="500" oninput="updateCharCount()"></textarea>
+                            <div class="char-counter"><span id="charCount">0</span>/500</div>
+                        </div>
+
+                        <!-- 提交按鈕 -->
+                        <button id="submitBtn" class="btn btn-success w-100">
+                            <i class="fas fa-paper-plane me-2"></i>提交問題
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 回應顯示區域 -->
+        <div class="row mt-2">
+            <div class="col-12">
+                <h4 class="mb-3"><i class="fas fa-robot me-2"></i>AI模型回應</h4>
+
+                <!-- Gemini 回應 -->
+                <div class="response-card fade-in" style="animation-delay: 0.1s">
+                    <div class="response-header gemini-header">
+                        <div>
+                            <i class="fas fa-atom model-icon"></i>Gemini 回應
+                        </div>
+                        
+
+                        <button class="btn btn-sm btn-light toggle-btn d-none" onclick="toggleResponse('responseGemini')">
+                            <i class="fas fa-chevron-down"></i> <!-- 向下箭頭 -->
+                        </button>
+                        <div id="geminiLoading" class="d-none">
+                            <div class="loading"></div>
+                        </div>
+                    </div>
+                        
+                    <div id="responseGemini" class="response-body"></div>
+                        <div class="response-toolbar">
+                            <button class="btn btn-sm btn-light copy-btn" onclick="copyResponse(this)">
+                                <i class="fas fa-copy"></i> 複製
+                            </button>
+                            <!-- 可以在這裡繼續添加其他工具按鈕 -->
+                        </div>
+                </div>
+
+                <!-- ChatGPT 回應 -->
+                <div class="response-card fade-in" style="animation-delay: 0.2s">
+                    <div class="response-header chatgpt-header">
+                        <div>
+                            <i class="fas fa-brain model-icon"></i>ChatGPT 回應
+                        </div>
+                        <button class="btn btn-sm btn-light toggle-btn d-none" onclick="toggleResponse('responseChatGPT')">
+                            <i class="fas fa-chevron-down"></i> <!-- 向下箭頭 -->
+                        </button>
+                        <div id="chatgptLoading" class="d-none">
+                            <div class="loading"></div>
+                        </div>
+                    </div>
+                       
+
+                    <div id="responseChatGPT" class="response-body"></div>
+                         <div class="response-toolbar">
+                            <button class="btn btn-sm btn-light copy-btn" onclick="copyResponse(this)">
+                                <i class="fas fa-copy"></i> 複製
+                            </button>
+                            <!-- 可以在這裡繼續添加其他工具按鈕 -->
+                        </div>
+                </div>
+
+                <!-- Grok 回應 -->
+                <div class="response-card fade-in" style="animation-delay: 0.3s">
+                    <div class="response-header grok-header">
+                        <div>
+                            <i class="fas fa-wind model-icon"></i>Grok 回應
+                        </div>
+                        <button class="btn btn-sm btn-light toggle-btn d-none" onclick="toggleResponse('responseGrok')">
+                            <i class="fas fa-chevron-down"></i> <!-- 向下箭頭 -->
+                        </button>
+                        <div id="grokLoading" class="d-none">
+                            <div class="loading"></div>
+                        </div>
+                    </div>
+
+                    <div id="responseGrok" class="response-body"></div>
+                        <div class="response-toolbar">
+                            <button class="btn btn-sm btn-light copy-btn" onclick="copyResponse(this)">
+                                <i class="fas fa-copy"></i> 複製
+                            </button>
+                            <!-- 可以在這裡繼續添加其他工具按鈕 -->
+                        </div>
+                </div>
+            </div>
+        </div>
+        <!--歷史紀錄 -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-history me-2"></i>歷史紀錄</h5>
+                            <div id="historyList" class="history-list"></div>
+                            <button id="clearHistoryBtn" class="btn btn-outline-secondary btn-sm mt-2">
+                                <i class="fas fa-trash-alt me-2"></i>清除紀錄
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let selectedRole = '一般人';
+
+        function selectRole(element) {
+            selectedRole = element.innerText.replace(/[^\u4e00-\u9fa5]/g, '').trim(); // 移除图标等字符，只保留中文
+            document.getElementById('dropdownMenuButton1').innerHTML = `<i class="fas fa-user-tag me-2"></i>${selectedRole}`;
+            document.getElementById('currentRole').innerText = selectedRole;
+        }
+
+        function updateCharCount() {
+            const input = document.getElementById('userInput');
+            const counter = document.getElementById('charCount');
+            counter.textContent = input.value.length;
+
+            // 添加视觉反馈
+            if (input.value.length > 400) {
+                counter.style.color = '#f72585';
+            } else {
+                counter.style.color = '#6c757d';
+            }
+        }
+
+       // 提交按鈕事件處理器
+document.getElementById('submitBtn').addEventListener('click', async () => {
+    const userInput = document.getElementById('userInput').value.trim();
+    const responseGemini = document.getElementById('responseGemini');
+    const responseChatGPT = document.getElementById('responseChatGPT');
+    const responseGrok = document.getElementById('responseGrok');
+    const submitBtn = document.getElementById('submitBtn');
+
+    const geminiLoading = document.getElementById('geminiLoading');
+    const chatgptLoading = document.getElementById('chatgptLoading');
+    const grokLoading = document.getElementById('grokLoading');
+
+    if (!userInput) {
+        const userInputElement = document.getElementById('userInput');
+        userInputElement.classList.add('is-invalid');
+        userInputElement.focus();
+
+        setTimeout(() => {
+            userInputElement.classList.remove('is-invalid');
+        }, 3000);
+        return;
+    }
+
+    // 隱藏所有箭頭按鈕
+    const toggleButtons = document.querySelectorAll('.toggle-btn');
+    toggleButtons.forEach(button => button.classList.add('d-none')); 
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>處理中...';
+
+    responseGemini.innerHTML = "";
+    responseChatGPT.innerHTML = "";
+    responseGrok.innerHTML = "";
+
+    geminiLoading.classList.remove('d-none');
+    chatgptLoading.classList.remove('d-none');
+    grokLoading.classList.remove('d-none');
+
+    try {
+        const [geminiResponse, chatGPTResponse, GrokResponse] = await Promise.all([
+            fetch('/api/ai', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: userInput,
+                    role: selectedRole,
+                    model: 'gemini'
+                }),
+            }).then(res => res.json()),
+
+            fetch('/api/ai', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: userInput,
+                    role: selectedRole,
+                    model: 'chatgpt'
+                }),
+            }).then(res => res.json()),
+
+            fetch('/api/ai', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: userInput,
+                    role: selectedRole,
+                    model: 'grok'
+                }),
+            }).then(res => res.json())
+        ]);
+
+        // 獲取回應內容
+        const responses = {
+            gemini: geminiResponse.reply || "❌ 無法獲得回應。",
+            chatgpt: chatGPTResponse.reply || "❌ 無法獲得回應。",
+            grok: GrokResponse.reply || "❌ 無法獲得回應。"
+        };
+
+        // 儲存到歷史紀錄
+        saveChatHistory(userInput, responses);
+
+        // 顯示回應內容
+        setTimeout(() => {
+            responseGemini.textContent = responses.gemini;
+            geminiLoading.classList.add('d-none');
+            geminiLoading.previousElementSibling.classList.remove('d-none');
+        }, 100);
+
+        setTimeout(() => {
+            responseChatGPT.textContent = responses.chatgpt;
+            chatgptLoading.classList.add('d-none');
+            chatgptLoading.previousElementSibling.classList.remove('d-none');
+        }, 200);
+
+        setTimeout(() => {
+            responseGrok.textContent = responses.grok;
+            grokLoading.classList.add('d-none');
+            grokLoading.previousElementSibling.classList.remove('d-none');
+        }, 300);
+
+    } catch (error) {
+        geminiLoading.classList.add('d-none');
+        chatgptLoading.classList.add('d-none');
+        grokLoading.classList.add('d-none');
+
+        responseGemini.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>出現錯誤，請稍後再試。</div>';
+        responseChatGPT.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>出現錯誤，請稍後再試。</div>';
+        responseGrok.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>出現錯誤，請稍後再試。</div>';
+    } finally {
+        setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>提交問題';
+        }, 1200);
+    }
+});
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCharCount();
+        });
+        //展開收回按鈕控制
+        function toggleResponse(responseId) {
+        const body = document.getElementById(responseId);
+        const button = body.previousElementSibling.querySelector('.toggle-btn');
+        const isHidden = body.classList.contains('d-none');
+
+        if (isHidden) {
+            body.classList.remove('d-none');
+            button.innerHTML = '<i class="fas fa-chevron-up"></i>'; // 向上箭頭
+        } else {
+            body.classList.add('d-none');
+            button.innerHTML = '<i class="fas fa-chevron-down"></i>'; // 向下箭頭
+        }
+        }
+
+
+        
+        function copyResponse(button) {
+        // 獲取回應內容
+        var responseCard = button.closest('.response-card');
+        var responseBody = responseCard.querySelector('.response-body');
+
+        if (responseBody) {
+            var textarea = document.createElement('textarea');
+            textarea.value = responseBody.innerText.trim();
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            // 改變按鈕文本為 "已複製"
+            button.classList.add('copied');
+            button.innerHTML = '<i class="fas fa-check"></i> 已複製'; // 顯示勾勾圖標並更新文本
+
+            // 3秒後恢復為原始狀態
+            setTimeout(function() {
+                button.classList.remove('copied');
+                button.innerHTML = '<i class="fas fa-copy"></i> 複製'; // 恢復原狀
+            }, 3000);
+        } else {
+            console.log('無法找到回應內容。');
+        }
+        }
+            //提示詞按鈕
+         function addCommonPrompt(text) {
+        const userInput = document.getElementById('userInput');
+        userInput.value = userInput.value ? userInput.value + ' ' + text : text;
+        updateCharCount();
+    }       
+
+           // 歷史紀錄相關功能
+        let chatHistory = JSON.parse(localStorage.getItem('aiChatHistory')) || [];
+
+        // 儲存對話紀錄
+        function saveChatHistory(question, responses) {
+    if (!question || question.trim() === '') return;
+
+    // 建立一筆新的歷史紀錄
+    const newEntry = {
+        id: Date.now() + Math.random(), // 新增：為每筆紀錄加上唯一ID
+        question: question,
+        timestamp: new Date().toISOString(),
+        role: selectedRole,
+        responses: responses
+    };
+
+    // 插入最新紀錄到開頭
+    chatHistory.unshift(newEntry);
+    // 限制最多保留 100 筆紀錄
+    if (chatHistory.length > 100) {
+        chatHistory = chatHistory.slice(0, 100); // 保留最新前 100 筆
+    }
+    // 儲存到本地儲存空間
+    localStorage.setItem('aiChatHistory', JSON.stringify(chatHistory));
+
+    // 更新歷史紀錄列表
+    updateHistoryList();
+}
+
+        // 更新歷史紀錄列表顯示 (修改版本)
+        function updateHistoryList() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            if (chatHistory.length === 0) {
+                historyList.innerHTML = '<div class="text-muted small py-2">暫無歷史紀錄</div>';
+                return;
+            }
+            
+            // 按時間排序（最新的在最上面）
+            chatHistory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            chatHistory.forEach((record, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                // 使用 index 作為更可靠的 ID
+                const recordId = record.id || record.timestamp || index;
+                
+                historyItem.innerHTML = `
+                    <div class="history-question">${record.question}</div>
+                    <div class="history-date">${formatDate(record.timestamp)} · ${record.role}</div>
+                    <button class="delete-history-btn" data-record-id="${recordId}" title="刪除此紀錄">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                
+                // 為刪除按鈕添加事件監聽器
+                const deleteBtn = historyItem.querySelector('.delete-history-btn');
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // 防止觸發父元素的點擊事件
+                    const recordId = e.currentTarget.getAttribute('data-record-id');
+                    deleteHistoryItem(recordId, index);
+                });
+                
+                // 點擊歷史紀錄項目時載入完整對話
+                historyItem.addEventListener('click', (e) => {
+                    // 如果點擊的是刪除按鈕，不載入記錄
+                    if (e.target.closest('.delete-history-btn')) {
+                        return;
+                    }
+                    loadHistoryRecord(record);
+                });
+                
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        // 刪除單一歷史紀錄的函數
+        function deleteHistoryItem(recordId, index) {
+            
+
+                // 使用索引刪除更可靠
+                if (typeof index !== 'undefined' && index >= 0 && index < chatHistory.length) {
+                    chatHistory.splice(index, 1);
+                } else {
+                    // 備用方案：使用 ID 過濾
+                    const originalLength = chatHistory.length;
+                    chatHistory = chatHistory.filter(record => {
+                        const currentId = record.id || record.timestamp;
+                        return String(currentId) !== String(recordId);
+                    });
+                    
+                }
+                
+                // 更新本地儲存
+                localStorage.setItem('aiChatHistory', JSON.stringify(chatHistory));
+                
+                // 重新顯示歷史紀錄列表
+                updateHistoryList();
+                
+                
+            
+        }
+
+        // 載入歷史紀錄
+        function loadHistoryRecord(record) {
+            // 填入問題
+            document.getElementById('userInput').value = record.question;
+            
+            // 設定身份
+            selectedRole = record.role;
+            document.getElementById('dropdownMenuButton1').innerHTML = `<i class="fas fa-user-tag me-2"></i>${record.role}`;
+            document.getElementById('currentRole').innerText = record.role;
+            
+            // 顯示AI回應
+            document.getElementById('responseGemini').textContent = record.responses.gemini;
+            document.getElementById('responseChatGPT').textContent = record.responses.chatgpt;
+            document.getElementById('responseGrok').textContent = record.responses.grok;
+            
+            // 確保回應區塊是展開的
+            document.getElementById('responseGemini').classList.remove('d-none');
+            document.getElementById('responseChatGPT').classList.remove('d-none');
+            document.getElementById('responseGrok').classList.remove('d-none');
+            
+            // 更新字符計數
+            updateCharCount();
+        }
+
+        // 清除歷史紀錄
+            document.getElementById('clearHistoryBtn').addEventListener('click', function() {
+                    chatHistory = [];
+                    localStorage.removeItem('aiChatHistory');
+                    updateHistoryList();
+
+                    // 改變按鈕文本為 "已清除"
+                    const button = document.getElementById('clearHistoryBtn');
+                    button.classList.add('cleared');
+                    button.innerHTML = '<i class="fas fa-check"></i> 已清除'; // 顯示勾勾圖標並更新文本
+
+                    // 3秒後恢復為原始狀態
+                    setTimeout(function() {
+                        button.classList.remove('cleared');
+                        button.innerHTML = '<i class="fas fa-trash"></i> 清除歷史'; // 恢復原狀
+                    }, 3000);
+                
+            });
+        // 輔助函數：格式化日期
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            return `${date.getFullYear()}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getDate().toString().padStart(2,'0')} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
+        }
+
+        // 初始化時載入歷史紀錄
+        document.addEventListener('DOMContentLoaded', updateHistoryList);
+
+            </script>
+        </body>
+        </html>
