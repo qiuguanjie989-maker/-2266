@@ -22,7 +22,15 @@
       <option value="高中生">高中生</option>
     </select>
   </div>
-
+  <div class="mb-3 d-flex flex-column align-items-center">
+    <label class="form-label">常用提示語：</label>
+    <div class="btn-group" role="group">
+      <button type="button" class="btn custom-btn" onclick="addCommonPrompt('為什麼')">為什麼</button>
+      <button type="button" class="btn custom-btn" onclick="addCommonPrompt('解釋')">解釋</button>
+      <button type="button" class="btn custom-btn" onclick="addCommonPrompt('範例')">範例</button>
+      <button type="button" class="btn custom-btn" onclick="addCommonPrompt('建議')">建議</button>
+    </div>
+  </div>
   <div class="input-area">
     <textarea
       id="question"
@@ -216,6 +224,13 @@
     });
 
     updateHistoryList();
+
+    //提示詞按鈕
+         function addCommonPrompt(text) {
+        const userInput = document.getElementById('question');
+        userInput.value = userInput.value ? userInput.value + ' ' + text : text;
+        updateCharCount();
+    }       
   </script>
 </body>
 </html>
