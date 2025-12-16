@@ -21,15 +21,36 @@
       <option value="國中生">國中生</option>
       <option value="高中生">高中生</option>
     </select>
+  </div>  
+  <!-- 右上角：學生資訊輸入欄位 -->
+<div id="studentInfoBox">
+
+  <div class="mb-3">
+    <label class="form-label">學校名稱</label>
+    <input type="text" id="schoolName" class="form-control">
   </div>
-  <div class="mb-3 d-flex flex-column align-items-center">
-    <label class="form-label">常用提示語：</label>
-    <div class="btn-group" role="group">
-      <button type="button" class="btn custom-btn" onclick="addCommonPrompt('為什麼')">為什麼</button>
-      <button type="button" class="btn custom-btn" onclick="addCommonPrompt('解釋')">解釋</button>
-      <button type="button" class="btn custom-btn" onclick="addCommonPrompt('範例')">範例</button>
-      <button type="button" class="btn custom-btn" onclick="addCommonPrompt('建議')">建議</button>
-    </div>
+
+  <div class="mb-3">
+    <label class="form-label">學號</label>
+    <input type="text" id="studentID" class="form-control">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">姓名</label>
+    <input type="text" id="studentName" class="form-control">
+  </div>
+
+</div>
+
+  <div class="mb-3 d-flex flex-column align-items-center"> 
+    <label class="form-label">常用提示語：</label> 
+    <div class="btn-group" role="group"> 
+      <button type="button" class="btn custom-btn" onclick="addCommonPrompt('為什麼')">為什麼</button> 
+      <button type="button" class="btn custom-btn" onclick="addCommonPrompt('解釋')">解釋</button> 
+      <button type="button" class="btn custom-btn" onclick="addCommonPrompt('範例')">範例</button> 
+      <button type="button" class="btn custom-btn" onclick="addCommonPrompt('建議')">建議</button> 
+      <button type="button" class="btn custom-btn" onclick="addCommonPrompt('新增')">新增</button> 
+    </div> 
   </div>
   <div class="input-area">
     <textarea
@@ -146,66 +167,92 @@
     }
 
     async function askAI() {
-      const question = questionInput.value.trim();
-      if (!question) {
-        alert('請輸入問題！');
-        return;
-      }
-      const role = roleSelect.value;
+  const question = questionInput.value.trim();
+  if (!question) {
+    alert('請輸入問題！');
+    return;
+  }
+  const role = roleSelect.value;
 
-      geminiResp.textContent = '⏳ Gemini 正在思考...';
-      chatgptResp.textContent = '⏳ ChatGPT 正在思考...';
-      grokResp.textContent = '⏳ Grok 正在思考...';
+  geminiResp.textContent = '⏳ Gemini 正在思考...';
+  chatgptResp.textContent = '⏳ ChatGPT 正在思考...';
+  grokResp.textContent = '⏳ Grok 正在思考...';
 
-      submitBtn.disabled = true;
-      submitBtn.textContent = '等待回應中...';
+  submitBtn.disabled = true;
+  submitBtn.textContent = '等待回應中...';
 
-      try {
-        // 這裡是模擬API，實際使用時換成你的後端API呼叫
-        const geminiReply = await fetch('/api/ai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: question, role, model: 'gemini' }),
-        }).then(res => res.json()).then(data => data.reply);
+  try {
+    // 1️⃣ 呼叫 AI API
+    const geminiReply = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: question, role, model: 'gemini' }),
+    }).then(res => res.json()).then(data => data.reply || '');
 
-        const chatgptReply = await fetch('/api/ai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: question, role, model: 'chatgpt' }),
-        }).then(res => res.json()).then(data => data.reply);
+    const chatgptReply = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: question, role, model: 'chatgpt' }),
+    }).then(res => res.json()).then(data => data.reply || '');
 
-        const grokReply = await fetch('/api/ai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: question, role, model: 'grok' }),
-        }).then(res => res.json()).then(data => data.reply);
+    const grokReply = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: question, role, model: 'grok' }),
+    }).then(res => res.json()).then(data => data.reply || '');
 
-        geminiResp.textContent = geminiReply || '❌ 無回應';
-        chatgptResp.textContent = chatgptReply || '❌ 無回應';
-        grokResp.textContent = grokReply || '❌ 無回應';
+    // 顯示回覆
+    geminiResp.textContent = geminiReply || '❌ 無回應';
+    chatgptResp.textContent = chatgptReply || '❌ 無回應';
+    grokResp.textContent = grokReply || '❌ 無回應';
 
-        // 儲存歷史
-        chatHistory.push({
-          id: Date.now(),
-          question,
-          role,
-          responses: {
-            gemini: geminiReply || '',
-            chatgpt: chatgptReply || '',
-            grok: grokReply || '',
-          },
-        });
-        localStorage.setItem('aiChatHistory', JSON.stringify(chatHistory));
-        updateHistoryList();
-      } catch (err) {
-        geminiResp.textContent = '❌ 出錯了';
-        chatgptResp.textContent = '❌ 出錯了';
-        grokResp.textContent = '❌ 出錯了';
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = '🚀 問 AI！';
-      }
-    }
+    // 2️⃣ 存 localStorage
+    chatHistory.push({
+      id: Date.now(),
+      question,
+      role,
+      responses: {
+        gemini: geminiReply,
+        chatgpt: chatgptReply,
+        grok: grokReply,
+      },
+    });
+    localStorage.setItem('aiChatHistory', JSON.stringify(chatHistory));
+    updateHistoryList();
+
+    // 3️⃣ 存後端 SQLite
+    const school = document.getElementById("schoolName").value;
+    const studentID = document.getElementById("studentID").value;
+    const studentName = document.getElementById("studentName").value;
+
+    await fetch("/save_record", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        school,
+        studentID,
+        studentName,
+        question,
+        responses: {
+          gemini: geminiReply,
+          chatgpt: chatgptReply,
+          grok: grokReply
+        }
+      })
+    });
+
+  } catch (err) {
+    console.error(err);
+    geminiResp.textContent = '❌ 出錯了';
+    chatgptResp.textContent = '❌ 出錯了';
+    grokResp.textContent = '❌ 出錯了';
+    alert('發生錯誤，請稍後再試');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '🚀 問 AI！';
+  }
+}
+
 
     submitBtn.addEventListener('click', askAI);
 
@@ -232,5 +279,7 @@
         updateCharCount();
     }       
   </script>
+  
+<script src="teacher.js"></script>
 </body>
 </html>
