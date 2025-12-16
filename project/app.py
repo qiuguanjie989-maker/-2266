@@ -4,14 +4,41 @@ from flask_cors import CORS
 import google.generativeai as genai
 from openai import OpenAI
 import requests
+import sqlite3
 
 app = Flask(__name__)
 CORS(app)
 
+# SQLite 絕對路徑
+DB_FOLDER = os.path.join(os.path.dirname(__file__), "sql")
+os.makedirs(DB_FOLDER, exist_ok=True)  # 確保資料夾存在
+DB_PATH = os.path.join(DB_FOLDER, "chat.db")
+
+# 初始化資料庫
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS records (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            school TEXT,
+            studentID TEXT,
+            studentName TEXT,
+            question TEXT,
+            gemini_answer TEXT,
+            chatgpt_answer TEXT,
+            grok_answer TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+
 # API 金鑰
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-GROK_API_KEY = os.getenv('GROK_API_KEY')
+GEMINI_API_KEY = ('AIzaSyCE52wpYJkIsW41-h1GPYz0sxJ1daRInzI')
+OPENAI_API_KEY = ('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')
+GROK_API_KEY = ('xai-u2o9NsbLrfdq5bC1NjLXmG3nZvfkUPuU2RNfJqHvcNWW0stnrw0I8Na8yPTsYY8SIzuQurLXrj99TixM')
 
 # 初始化 Gemini 和 OpenAI 客戶端
 genai.configure(api_key=GEMINI_API_KEY)
@@ -21,7 +48,6 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY)
 @app.route('/')
 def home():
     return render_template('index.html')
-
 @app.route('/api/ai', methods=['POST'])
 def ai_response():
     data = request.json
@@ -79,7 +105,59 @@ def ai_response():
         return jsonify({'reply': f'伺服器錯誤：{str(e)}'}), 500
 
 
+
+# 學生端網頁
+@app.route("/student")
+def student_page():
+    return render_template("index.html")
+
+# 老師端網頁
+@app.route("/teacher")
+def teacher_page():
+    return render_template("teacher.html")
+
+# 存學生紀錄
+@app.post("/save_record")
+def save_record():
+    data = request.json
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('''
+        INSERT INTO records (school, studentID, studentName, question, gemini_answer, chatgpt_answer, grok_answer)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        data["school"],
+        data["studentID"],
+        data["studentName"],
+        data["question"],
+        data["responses"]["gemini"],
+        data["responses"]["chatgpt"],
+        data["responses"]["grok"]
+    ))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "saved"})
+
+
+# 老師端取得所有紀錄
+@app.get("/get_records")
+def get_records():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT * FROM records ORDER BY id DESC")
+    rows = c.fetchall()
+    records = [dict(row) for row in rows]
+    conn.close()
+    return jsonify(records)
+
+
+# 啟動前初始化資料庫
+init_db()
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+
 
 
