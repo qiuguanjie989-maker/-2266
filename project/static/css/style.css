@@ -180,4 +180,44 @@
       background: #fff3cd;
       color: #774c00;
     }
-  
+   /* 右上角輸入欄位外框 */
+#studentInfoBox {
+    position: absolute;
+    top: 20px;
+    right: 40px;
+    width: 260px;
+
+    padding: 18px;
+    background: rgba(255, 255, 255, 0.75);
+
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    backdrop-filter: blur(4px);
+
+    z-index: 9999; /* 防止壓到版面 */
+}
+
+/* 每一組欄位 */
+#studentInfoBox .mb-3 {
+    margin-bottom: 12px;
+}
+
+/* 標籤 */
+#studentInfoBox .form-label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #444;
+}
+
+/* 輸入框 */
+#studentInfoBox .form-control {
+    width: 100%;
+    padding: 6px 8px;
+
+    border-radius: 8px;
+    border: 1px solid #ccc;
+
+    font-size: 14px;
+}
+
