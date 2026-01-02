@@ -13,7 +13,7 @@
 
   <h1>🌈 AI 好朋友 </h1>
 
-  <div class="role-select">
+  <div class="role-select" hidden>
     <label for="role">選擇身份：</label>
     <select id="role" aria-label="身份選擇">
       <option value="一般人">一般人</option>
@@ -21,17 +21,18 @@
       <option value="國中生">國中生</option>
       <option value="高中生">高中生</option>
     </select>
-  </div>  
+</div> 
   <!-- 右上角：學生資訊輸入欄位 -->
 <div id="studentInfoBox">
 
-  <div class="mb-3">
+  <div class="mb-3 text-center">
     <label class="form-label">學校名稱</label>
-    <input type="text" id="schoolName" class="form-control">
+    <input type="text" id="schoolName" class="form-control" value="XX國小" readonly>
   </div>
+   
 
   <div class="mb-3">
-    <label class="form-label">學號</label>
+    <label class="form-label">班級座號</label>
     <input type="text" id="studentID" class="form-control">
   </div>
 
@@ -49,7 +50,6 @@
       <button type="button" class="btn custom-btn" onclick="addCommonPrompt('解釋')">解釋</button> 
       <button type="button" class="btn custom-btn" onclick="addCommonPrompt('範例')">範例</button> 
       <button type="button" class="btn custom-btn" onclick="addCommonPrompt('建議')">建議</button> 
-      <button type="button" class="btn custom-btn" onclick="addCommonPrompt('新增')">新增</button> 
     </div> 
   </div>
   <div class="input-area">
@@ -271,15 +271,20 @@
     });
 
     updateHistoryList();
-
     //提示詞按鈕
          function addCommonPrompt(text) {
         const userInput = document.getElementById('question');
         userInput.value = userInput.value ? userInput.value + ' ' + text : text;
         updateCharCount();
-    }       
+    }  
   </script>
-  
+  <div style="background:rgb(19, 234, 241); padding:20px; font-size:20px;">
+  <a href="https://docs.google.com/forms/d/e/1FAIpQLScK47610c42TO-XS2Xatzn7R7PtatvPuX_2_oaQYr4ZoLcWZQ/viewform"
+     target="_blank">
+    這裡一定要看到我（點我去表單）
+  </a>
+  </div>
+
 <script src="teacher.js"></script>
 </body>
 </html>
