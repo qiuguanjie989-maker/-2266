@@ -36,7 +36,7 @@ def init_db():
 
 
 # API 金鑰
-GEMINI_API_KEY = ('AIzaSyCE52wpYJkIsW41-h1GPYz0sxJ1daRInzI')
+GEMINI_API_KEY = ('AIzaSyDMzb6ItrsJUrbjTeBplM1s2eAZWAN-UoA')
 OPENAI_API_KEY = ('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')
 GROK_API_KEY = ('xai-u2o9NsbLrfdq5bC1NjLXmG3nZvfkUPuU2RNfJqHvcNWW0stnrw0I8Na8yPTsYY8SIzuQurLXrj99TixM')
 
@@ -156,3 +156,17 @@ def get_records():
 init_db()
 if __name__ == '__main__':
     app.run(debug=True)
+
+from flask import Flask, redirect
+
+app = Flask(__name__)
+
+@app.route("/form")
+def go_form():
+    return redirect(
+        "https://docs.google.com/forms/d/e/1FAIpQLScK47610c42TO-XS2Xatzn7R7PtatvPuX_2_oaQYr4ZoLcWZQ/viewform"
+    )
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
