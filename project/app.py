@@ -35,9 +35,9 @@ def init_db():
     conn.close()
 
 # API 金鑰
-GEMINI_API_KEY = os.getenv('AIzaSyDMzb6ItrsJUrbjTeBplM1s2eAZWAN-UoA')
-OPENAI_API_KEY = os.getenv('sk-ldR6HTSNODR0vPkgkb-2ENbKPlZCwf0Xqz_QdvC9EFK5O1Hnxo2vTVzM2sIxLapPoJj61GFCSoT3BlbkFJGtaUJA1SKjs-KAYX6SdZKw5q8DC1ocDELN-lwPObOb7OheWE4WEuxSX7BmOMk8JW8wPjuB4xUA')
-GROK_API_KEY = os.getenv('xai-u2o9NsbLrfdq5bC1NjLXmG3nZvfkUPuU2RNfJqHvcNWW0stnrw0I8Na8yPTsYY8SIzuQurLXrj99TixM')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+GROK_API_KEY = os.getenv('GROK_API_KEY')
 
 # 初始化 Gemini 和 OpenAI 客戶端
 genai.configure(api_key=GEMINI_API_KEY)
@@ -86,29 +86,45 @@ def ai_response():
     final_prompt = role_prompts.get(role, prompt)
 
     try:
-        if model == 'gemini':
-            response = gemini_model.generate_content(final_prompt)
-            reply = response.text
-        elif model == 'chatgpt':
-            response = openai_client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "system", "content": "你是一個有幫助的AI助理"},
-                          {"role": "user", "content": final_prompt}]
-            )
-            reply = response.choices[0].message.content
-        elif model == 'grok':
-            headers = {"Authorization": f"Bearer {GROK_API_KEY}", "Content-Type": "application/json"}
-            payload = {"model": "grok-2", "messages":[{"role": "user", "content": final_prompt}], "temperature":0.7}
-            grok_response = requests.post("https://api.x.ai/v1/chat/completions", json=payload, headers=headers)
-            grok_response.raise_for_status()
-            reply = grok_response.json()["choices"][0]["message"]["content"]
+    if model == 'gemini':
+        # 使用新版 Gemini SDK
+        response = genai.generate_text(model="gemini-2.0-flash", prompt=final_prompt)
+        reply = response.output_text or "❌ Gemini 回傳空白"
+
+    elif model == 'chatgpt':
+        response = openai_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "你是一個有幫助的AI助理"},
+                {"role": "user", "content": final_prompt}
+            ]
+        )
+        if response.choices and len(response.choices) > 0:
+            reply = response.choices[0].message.content or "❌ ChatGPT 回傳空白"
         else:
-            reply = "❌ 未知的 AI 模型"
+            reply = "❌ ChatGPT 沒有回傳 choices"
 
-        return jsonify({'reply': reply})
+    elif model == 'grok':
+        headers = {"Authorization": f"Bearer {GROK_API_KEY}", "Content-Type": "application/json"}
+        payload = {"model": "grok-2", "messages":[{"role": "user", "content": final_prompt}], "temperature":0.7}
+        grok_response = requests.post("https://api.x.ai/v1/chat/completions", json=payload, headers=headers)
+        if grok_response.status_code != 200:
+            reply = f"❌ Grok API 錯誤，HTTP {grok_response.status_code}"
+        else:
+            data = grok_response.json()
+            try:
+                reply = data["choices"][0]["message"]["content"]
+            except (KeyError, IndexError):
+                reply = "❌ Grok 回傳格式錯誤"
 
-    except Exception as e:
-        return jsonify({'reply': f'伺服器錯誤：{str(e)}'}), 500
+    else:
+        reply = "❌ 未知的 AI 模型"
+
+    return jsonify({'reply': reply})
+
+except Exception as e:
+    return jsonify({'reply': f'伺服器錯誤：{str(e)}'}), 500
+
 
 # -----------------------------
 # 學生紀錄
@@ -151,6 +167,7 @@ def get_records():
 init_db()
 if __name__ == '__main__':
     app.run(debug=True)  # 本地開發用
+
 
 
 
