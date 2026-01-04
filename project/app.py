@@ -144,14 +144,7 @@ def get_records():
     records = [dict(row) for row in rows]
     conn.close()
     return jsonify(records)
-
-# -----------------------------
-# 啟動程式（本地開發版本）
-# -----------------------------
-init_db()
-if __name__ == '__main__':
-    app.run(debug=True)  # 本地開發用
-
+    
 def go_form():
     form_id = request.args.get('id')  # 例如 /form?id=1
 
@@ -161,6 +154,16 @@ def go_form():
         '3': "https://docs.google.com/forms/d/e/1FAIpQLSeX2wpZxTaFmSuFHk85kl2aCvKhpvmtlSFxVf0dRwgxtOVuxg/viewform?usp=publish-editor",
     }
     return redirect(forms[form_id])
+    
+# -----------------------------
+# 啟動程式（本地開發版本）
+# -----------------------------
+init_db()
+if __name__ == '__main__':
+    app.run(debug=True)  # 本地開發用
+
+
+
 
 
 
