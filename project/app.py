@@ -35,9 +35,9 @@ def init_db():
     conn.close()
 
 # API 金鑰
-GEMINI_API_KEY = 'AIzaSyDMzb6ItrsJUrbjTeBplM1s2eAZWAN-UoA'
-OPENAI_API_KEY = 'sk-proj-ldR6HTSNODR0vPkgkb-...'  # 示意
-GROK_API_KEY = 'xai-u2o9NsbLrfdq5bC1NjLXmG3nZvfkUPuU2RNfJqHvcNWW0stnrw0I8Na8yPTsYY8SIzuQurLXrj99TixM'
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+GROK_API_KEY = os.getenv('GROK_API_KEY')
 
 # 初始化 Gemini 和 OpenAI 客戶端
 genai.configure(api_key=GEMINI_API_KEY)
@@ -161,6 +161,7 @@ def go_form():
 init_db()
 if __name__ == '__main__':
     app.run(debug=True)  # 本地開發用
+
 
 
 
