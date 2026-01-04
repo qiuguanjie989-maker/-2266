@@ -152,6 +152,17 @@ init_db()
 if __name__ == '__main__':
     app.run(debug=True)  # 本地開發用
 
+def go_form():
+    form_id = request.args.get('id')  # 例如 /form?id=1
+
+    forms = {
+        '1': "https://docs.google.com/forms/d/e/1FAIpQLScK47610c42TO-XS2Xatzn7R7PtatvPuX_2_oaQYr4ZoLcWZQ/viewform?usp=header",
+        '2': "https://docs.google.com/forms/d/e/1FAIpQLSfReCsa_Ngj8xx8WUdk0qkRbDYRKbL5rUYy1Mojv3CziO8dyQ/viewform?usp=header",
+        '3': "https://docs.google.com/forms/d/e/1FAIpQLSeX2wpZxTaFmSuFHk85kl2aCvKhpvmtlSFxVf0dRwgxtOVuxg/viewform?usp=publish-editor",
+    }
+    return redirect(forms[form_id])
+
+
 
 
 
